@@ -38,7 +38,7 @@ export const Formulario = ({ setMonedas }) => {
   useEffect(() => {
     const consultarAPI = async () => {
       const url =
-        "https://min-api.cryptocompare.com/data/top/mktcapfull?limit=15&tsym=USD";
+        "https://min-api.cryptocompare.com/data/top/mktcapfull?limit=20&tsym=USD";
       const respuesta = await fetch(url);
       const resultado = await respuesta.json();
 
