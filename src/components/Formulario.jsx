@@ -1,13 +1,14 @@
 import styled from "@emotion/styled";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSelectMonedas } from "../hooks/useSelectMonedas";
 import { monedas } from "../data/monedas";
+import { Error } from "./Error";
 
 const InputSubmit = styled.input`
   background-color: #66a2fe;
   border: none;
   width: 100%;
-  padding: 0.7rem;
+  padding: 0.5rem;
   color: #fff;
   text-transform: uppercase;
   font-weight: bold;
@@ -22,13 +23,57 @@ const InputSubmit = styled.input`
   }
 `;
 
-export const Formulario = () => {
-  const [moneda, SelectMonedas] = useSelectMonedas("Elige tu moneda", monedas);
+export const Formulario = ({ setMonedas }) => {
+  const [criptos, setCriptos] = useState([]);
+  const [error, setError] = useState(false);
+  const [moneda, SelectMonedas] = useSelectMonedas(
+    "Elige tu moneda local",
+    monedas
+  );
+  const [criptomoneda, SelectCriptomoneda] = useSelectMonedas(
+    "Elige tu criptomoneda",
+    criptos
+  );
+
+  useEffect(() => {
+    const consultarAPI = async () => {
+      const url =
+        "https://min-api.cryptocompare.com/data/top/mktcapfull?limit=15&tsym=USD";
+      const respuesta = await fetch(url);
+      const resultado = await respuesta.json();
+
+      const arrayCriptos = resultado.Data.map((cripto) => {
+        return {
+          id: cripto.CoinInfo.Name,
+          nombre: cripto.CoinInfo.FullName,
+        };
+      });
+      setCriptos(arrayCriptos);
+    };
+    consultarAPI();
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (moneda === "" || criptomoneda === "") {
+      setError(true);
+      return;
+    }
+    setError(false);
+    setMonedas({
+      moneda,
+      criptomoneda,
+    });
+  };
 
   return (
-    <form>
-      <SelectMonedas />
-      <InputSubmit type="submit" value="Cotizar" />
-    </form>
+    <>
+      {error && <Error>Todos los campos son obligatorios</Error>}
+      <form onSubmit={handleSubmit}>
+        <SelectMonedas />
+        <SelectCriptomoneda />
+        <InputSubmit type="submit" value="Cotizar" />
+      </form>
+    </>
   );
 };
